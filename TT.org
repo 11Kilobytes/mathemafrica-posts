@@ -1,0 +1,245 @@
+#+BLOG: www.mathemafrica.org
+#+POSTID: 13035
+#+DATE: [2016-06-19 Sun 22:36]
+#+TITLE: Type Theory, Logic, and Programming
+
+Hello Internet. In this blog post we are going to learn some type theory, which
+is a field that lies in the intersection of mathematics and computer science. We
+are going to learn the variant called Martin-Löf Type Theory, or MLTT for short.
+To motivate it, we are going to try answering the question, "What is a valid
+program?"
+
+Not every program makes sense, for example what would a program consisting of
+the single expression ~x + 2~ mean? If we don't know what ~x~ is, then we don't
+know what the meaning of that expression is. More importantly, a program can
+combine expressions that are incompatible with each other. For example, if ~+~
+is the usual operation that adds two numbers then an expression like ~"abc" + 5~
+can't be given a meaning. To avoid such meaningless programs, we should talk
+about the different kinds of data and the valid operations on these pieces of
+data. In Type Theory, we call the different kinds of data "types." Type theory
+gives each piece of data a type, and the type tells you how the expression is
+constructed and how to write a meaningful program that processes that data. We
+will be working at an informal level of detail, much more detail will be
+required if for example, we want to implement a programming language based on
+type theory. Also MLTT is quite complex at first glance, so we'll build our way
+there in small steps.
+
+* System T
+System T has two types. The first one is natural numbers, whose type we'll call
+$\mathbb{N}$. The second one is functions $A \to B$, which take a value of type
+$A$ and return a a value of type $B$. So an example function type will be
+$\mathbb{N} \to \mathbb{N}$ any value of this type will be a function that maps
+natural numbers to natural numbers. Before we jump in, it'll be useful to
+introduce some notation. An obviously useful piece of notation will be $x : A$,
+which means $x$ has the type $A$, for example we expect to prove that $5 :
+\mathbb{N}$, meaning $5$ is a natural number. Let's start defining the function
+type.
+
+What is a function $A \to B$? It is a machine, that you can put a value of type
+$A$ in and get out a value of type $B$. For example, the statement $(+1) :
+\mathbb{N} \to \mathbb{N}$ means that assuming you have a natural number $x :
+\mathbb{N}$, you can get another one $(+1)(x) : \mathbb{N}$. To express this
+idea more formally, we need a way of asserting that "Given certain assumptions,
+some value has the type $A$". We write this as $\Gamma \vdash x : A$, which
+means given the assumptions $\Gamma$, the value $x$ has the type $A$. This assertion 
+is pronounced "$\Gamma$ entails that $x$ has the type $A$. The  
+assumptions will $\Gamma$ be of the form $x_1 : A_1, x_2 : A_2, \cdots$, which
+simply means that we are assuming that $x_1$ has the type $A_1$, $x_2$ has the
+type $A_2$ and so on. In Type Theory, we call the rule that tells you how to use
+a value of a given type the /elimination/ rule. So for functions we get the
+following:
+
+
+*Elimination Rule for Functions* If $\Gamma \vdash f : A \to B$, and $\Gamma
+\vdash a : A$ then $\Gamma \vdash f(a) : B$. In other words, if certain
+assumptions allow you to make a function then you can plug in a value of the
+appropriate type and get a particular type of output. Technically speaking we
+need one such axiom for every expression $f$, $A$ and $B$, and we need to write
+down a grammar that defines all the valid expressions, I'll leave that to you
+it's not that difficult.
+
+Okay, but how do you /make/ a function? Well, let's say you are making a
+function with the type $\mathbb{N} \to \mathbb{N}$, for example. You have to
+create a program with a variable $x$, which will be a placeholder for the input
+to the function. But, in order for your function to really have the type
+$\mathbb{N} \to \mathbb{N}$, you can't just use any old expression involving
+$x$, you have to make sure that whenever $x$ is a natural number then that
+expression is also a natural number. So, in conclusion if you have an expression
+$\phi$ such that given the assumption $x : \mathbb{N}$, we have $\phi :
+\mathbb{N}$, then you can construct a function $\mathbb{N}$ \to $\mathbb{N}$.
+The notation for this function is $\lambda \, x.\phi$ which is shorthand for
+"The function which takes $x$ as input and returns $\phi$ as output. If we
+generalise to arbitrary input and output types, we get this rule:
+
+*Introduction Rule for Functions* If $\Gamma, x : A \vdash \phi : B$, then
+$\Gamma \vdash \lambda \, x.\phi : A \to B$.
+
+Let me give an example of using the above two rules. Let's assume that we have a
+function that adds one to a natural number $(+1) : \mathbb{N} \to \mathbb{N}$.
+How do we define a function that adds two to a natural number? Well, $(+1) :
+\mathbb{N} \to \mathbb{N}, x : \mathbb{N} \vdash (+1)(x) : \mathbb{N}$ by the
+elimination rule for functions. Applying the elimination rule again, we have
+$(+1) : \mathbb{N}, x : \mathbb{N} \vdash (+1)((+1)(x)) : \mathbb{N}$. The
+introduction rule then allows us to form the function $\lambda x \,
+(+1)((+1)(x)) : \mathbb{N} \to \mathbb{N}$, that takes in $x$ and adds one to it
+twice. I'll introduce some shorthand for this definition. Let us write $f(x) :\equiv y$ to mean
+that the function $f$ is defined to be equal to $\lambda x.y$, so for example we would write
+\begin{equation}
+\mathrm{plus\_two}(x) :\equiv (+1)((+1)(x))
+\end{equation}
+
+The elimination rule tells us that we use a function by applying it to input.
+The natural question is, what is the resulting value of the expression. Since,
+we hope, every function is made using the introduction rule, we just have to
+specify what $(\lambda \, x.\phi)(y)$ means when $y : A$. Intuitively, what
+should happen is that we substitute $y$ for $x$ in $\phi$, however defining this
+is quite difficult. Let's say that, after a lot of work you managed to define
+integration, and a type of real numbers $\mathbb{R}$. Consider the function
+$\lambda \, x.\int^2_1 x - y\, dy$. Assuming that $y : \mathbb{R}$, how do we
+calculate $\left(\lambda \, x. \int^2_1 \, x - y \, dy\right)(y)$? The wrong
+thing to do would be to simply replace the symbol $x$ for the symbol $y$ and get
+$\int^2_1 \, y - y \, dy$, because the two uses of $y$ are different, one is the
+variable we are integrating with respect to and the other is the input to the
+function. Making sure that different variables which have the same name don't
+get confused with each other, so that instead of the wrong answer we get
+something like $\int ^2_1 y - t\, dt$ is the primary difficulty with actually
+defining substitution. For now, we'll just sweep this detail under the rug. So
+what we want to say is that the value of $(\lambda \, x \cdot \phi)(y)$ is
+defined to be $\phi$ but with $x$ substituted to be $y$. This motivates the idea
+of definitional equality. We say that two values of the same type, $a, b : A$
+for example, are definitionally equal if $a$ is equal to $b$ by definition. This
+means that whenever we have $a$ we can always swap it with $b$ and get the same
+program. To give an example, given an appropriate definition of addition $2 + 3$
+will be definitionally equal to $5$, but if we assume that $x, y : \mathbb{N}$
+then $x + y$ won't be definitionally equal to $y + x$. The definition of
+addition allows one to /simplify/ $2 + 3$ as being equal to $5$, but $x + y$
+can't be further simplified. Indeed, one actually has to prove that $x + y = y +
+x$, it isn't a simple matter of using the definition of addition to write $x +
+y$ as $y + x$. The notation is $\Gamma \vdash a \equiv_A b$, which means $a$ and
+$b$ are definitionally equal to each other as elements of the type $A$. So,
+without further ado:
+
+*Computation rule for functions* If $\Gamma, x : A \vdash \phi : B$, and $\Gamma
+\vdash y : A$ then $\Gamma \vdash (\lambda \, x.\phi)(y) \equiv_B \phi[x/y]$,
+where $\phi[x/y]$ just means "$\phi$ with $x$ substituted with $y$."
+
+Let me give an example of the above rule. Given our good old $(+1)$ function, we
+derived that $\lambda x \,. (+1)((+1)(x)) : \mathbb{N} \to \mathbb{N}$, and so
+by the computation rule for functions $(\lambda x \, . (+1)((+1)(x)))(5)
+\equiv_{\mathbb{N}} (+1)(+1)(5)$. From now I will be lazy and write $\equiv$
+instead of $\equiv_B$ for example.
+
+The last thing we want to say, is that every function can be written uniquely
+using $\lambda$. This results in the totally obvious:
+
+*Uniqueness principle for functions* If $\Gamma \vdash f : A \to B$, then
+$\Gamma \vdash f \equiv (\lambda \, x . f(x))$.
+
+You might have the question, "How do we talk about functions like $+$,
+which take two arguments." The answer is quite elegant actually, a
+function that takes two arguments, one of type $A$ and the other of 
+type $B$ and returns something of type $C$, is the same thing as
+a function with the type $A \to (B \to C)$. Such a function $f : A \to (B \to C)$,
+takes the first argument as input, and returns a function that takes the 
+second argument and outputs the result. For example, we will soon be able
+to define $+ : \mathbb{N} \to (\mathbb{N} \to \mathbb{N})$, such that
+$+(3) : \mathbb{N} \to \mathbb{N}$, is the function that adds three to its input. In
+a similar way a function with three inputs will have a type like $A \to (B \to (C \to D))$,
+which is quite cumbersome to write. So I'll be lazy and write $f : A \to B \to C \to D$,
+and while I'm at it I'll be lazier and write $f(a, b, c)$ instead of $f(a)(b)(c)$, for
+example.
+
+Let's move on from function and think about how to define the natural numbers.
+The pattern will be mostly the same, we will give introduction, elimination and
+computation rules.
+
+*Introduction Rule for Natural Numbers* We always have $\Gamma \vdash 0 : \mathbb{N}$,
+i.e. zero is a natural number. Further if, $\Gamma \vdash 0 : \mathbb{N}$ then 
+$\Gamma \vdash \mathrm{succ}(n) : \mathbb{N}$. The function $\mathrm{succ}$ allows
+you to construct new natural numbers from old ones, by adding one to them. So, given
+no assumptions $0 : \mathbb{N}$, and so $\mathrm{succ}(0) : \mathbb{N}$ as well. The
+name humans give to $\mathrm{succ}(0)$ is $1$, and similarly $\mathrm{succ}(\mathrm{succ}(0)) : \mathbb{N}$
+which gives us the number $2$ and so on.
+
+*Elimination rule for Natural Numbers* We want to make a function that takes a
+natural number as input. Let's think about one of the simplest such functions,
+the factorial. The factorial is /defined/ like this, assuming a proper definition of multiplication:
+\begin{align*}
+0! &\equiv 1 \\
+\mathrm{succ}(n)! &\equiv n \cdot n!
+\end{align*}
+
+At first glance, it does seem kind of circular to define any function in terms of itself,
+like what the second equality tries to do. However, this definition makes sense, and
+always produces a natural number $n! : \mathbb{N}$ for any $n : \mathbb{N}$, here is 
+some intuition about how this works. Say we want to simplify $4!$, we can use the definition
+like this:
+\begin{align*}
+4! &\equiv 3 \cdot 2! \\
+   &\equiv 3 \cdot 2 \cdot 1! \\
+   &\equiv 3 \cdot 2 \cdot 1 \cdot 0! \\
+   &\equiv 3 \cdot 2 \cdot 1 \cdot 1 
+\end{align*} 
+
+In the above calculation we use the definition $4 \equiv \mathrm{succ}(3)$,
+and apply the second equation above. We repeat this process until we 
+get to $0$, after which we may apply the first equation. So the reason such
+circular definition works, is because we reduce the number step by step from
+$\mathrm{succ}(n)$ to $n$ repeatedly until we get $0$, and we know that this will
+eventually reach $0$ since $0$ and $\mathrm{succ}$ are the only ways we gave to 
+/make/ a natural number in the introduction rule. Computer scientists may recognise
+this idea as recursion. In other words, we should define functions $f$ by their
+values $f(0)$ and $f(\mathrm{succ}(n))$, and we should be able to define $f(\mathrm{succ}(n))$
+in terms of $f(n)$, and this elimination rule can be defined in an intuitive way given
+the introduction rules above. Now, some definitions may look valid, but may run forever
+for example if we define:
+\begin{align*}
+f(0) &\equiv 0 \\
+f(\mathrm{succ}(n)) &\equiv f(\mathrm{succ(n)})
+\end{align*}
+
+Then, we are simply defining the value of the function as itself, which doesn't
+help one to compute the value of the function. Let's say I try to work out
+$f(4)$, we'll the second rule allows me to write this as $f(4)$, and I can 
+apply the second rule again and get $f(4)$, and so on, we're just going in circles. To
+prevent this, the elimination rule is carefully designed to make sure that when you
+define $f(\mathrm{succ}(n))$ you may only use the values of $n$ and $f(n)$, and 
+in particular you can't use say $f(n+1)$. So here is the elimination rule:
+
+Given the following data
+- $e_0 : A$
+- $e_\mathrm{succ} : \mathbb{N} \to A \to A$
+
+We have:
+- $rec_\mathbb{N}(e_0, e_\mathrm{succ}) : A \to \mathbb{N}$
+
+Here I'm being lazy again, and I'm leaving out the assumptions $\Gamma$ since
+obviously these rules will apply whatever assumptions you have. The first
+piece of data you need to make a function $f : A \to N$, is the value of 
+$f(0)$, this is given by $e_0$. The next piece of data you need,
+is the value of $f(\mathrm{succ}(n)$ given $n$ and the value of $f(n)$,
+this is provided by $e_\mathrm{succ}(n)$ which is a function. The function 
+$e_\mathrm{succ}$ takes as input $n$, the value of $f(n)$ and returns the
+value of $\mathrm{succ}(n)$, notice how phrasing the elimination rule this
+way makes sure that we can only define sensible functions by recursion.
+
+Let us do an example. We will define $+ : \mathbb{N} \to \mathbb{N} \to \mathbb{N}$: We
+will have to write $+(x) :\equiv \cdots$ where $\cdots$ is a function $\mathbb{N} \to \mathbb{N}$,
+whose definition must depend on $x$. We will define this function by recursion, since we
+want $+(x, 0) :\equiv x$, and $+(x, succ(y)) :\equiv \mathrm{succ}(+(x, y))$, so here we go:
+\begin{equation}
++(x) := rec_{\mathbb{N}}(x, \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}))  
+\end{equation}
+
+The only thing we need to make sure is that we really have $+(x, 0) \equiv x$ and
+$+(x, \mathrm{succ}(y)) \equiv \mathrm{succ}(y)$, and for this we need a computation rule. 
+
+*Computation rule for functions* Given $e_0 : A$, $e_{\mathrm{succ}} : \mathbb{N} \to A \to A$
+we have:
+\begin{align*}
+rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(0) &\equiv 0 \\
+rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(\mathrm{succ}(n)) &\equiv  
+e_\mathrm{succ}(n, rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(n))
+\end{align*}
+
+The equalities for $+$ follow as a special case of this. 
