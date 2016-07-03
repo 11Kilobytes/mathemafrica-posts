@@ -5,7 +5,7 @@
 
 Hello Internet. In this blog post we are going to learn some type theory, which
 is a field that lies in the intersection of mathematics and computer science. We
-are going to learn the variant called Martin-Löf Type Theory, or MLTT for short.
+are eventually going to learn the variant called Martin-Löf Type Theory, or MLTT for short.
 To motivate it, we are going to try answering the question, "What is a valid
 program?"
 
@@ -28,7 +28,7 @@ there in small steps.
 System T has two types. The first one is natural numbers, whose type we'll call
 $\mathbb{N}$. The second one is functions $A \to B$, which take a value of type
 $A$ and return a a value of type $B$. So an example function type will be
-$\mathbb{N} \to \mathbb{N}$ any value of this type will be a function that maps
+$\mathbb{N} \to \mathbb{N}$, any value of this type will be a function that maps
 natural numbers to natural numbers. Before we jump in, it'll be useful to
 introduce some notation. An obviously useful piece of notation will be $x : A$,
 which means $x$ has the type $A$, for example we expect to prove that $5 :
@@ -82,7 +82,7 @@ How do we define a function that adds two to a natural number? Well, $(+1) :
 \mathbb{N} \to \mathbb{N}, x : \mathbb{N} \vdash (+1)(x) : \mathbb{N}$ by the
 elimination rule for functions. Applying the elimination rule again, we have
 $(+1) : \mathbb{N}, x : \mathbb{N} \vdash (+1)((+1)(x)) : \mathbb{N}$. The
-introduction rule then allows us to form the function $\lambda x \,
+introduction rule then allows us to form the function $\lambda \, x.
 (+1)((+1)(x)) : \mathbb{N} \to \mathbb{N}$, that takes in $x$ and adds one to it
 twice. I'll introduce some shorthand for this definition. Let us write $f(x) :\equiv y$ to mean
 that the function $f$ is defined to be equal to $\lambda x.y$, so for example we would write
@@ -138,7 +138,7 @@ using $\lambda$. This results in the totally obvious:
 $\Gamma \vdash f \equiv (\lambda \, x . f(x))$.
 
 You might have the question, "How do we talk about functions like $+$,
-which take two arguments." The answer is quite elegant actually, a
+which take two arguments?" The answer is quite elegant actually, a
 function that takes two arguments, one of type $A$ and the other of 
 type $B$ and returns something of type $C$, is the same thing as
 a function with the type $A \to (B \to C)$. Such a function $f : A \to (B \to C)$,
@@ -151,7 +151,7 @@ which is quite cumbersome to write. So I'll be lazy and write $f : A \to B \to C
 and while I'm at it I'll be lazier and write $f(a, b, c)$ instead of $f(a)(b)(c)$, for
 example. The idea of defining multi argument functions like this is called /currying/.
 
-Let's move on from function and think about how to define the natural numbers.
+Let's move on from functions and think about how to define the natural numbers.
 The pattern will be mostly the same, we will give introduction, elimination and
 computation rules.
 
@@ -161,7 +161,9 @@ $\Gamma \vdash \mathrm{succ}(n) : \mathbb{N}$. The function $\mathrm{succ}$ allo
 you to construct new natural numbers from old ones, by adding one to them. So, given
 no assumptions $0 : \mathbb{N}$, and so $\mathrm{succ}(0) : \mathbb{N}$ as well. The
 name humans give to $\mathrm{succ}(0)$ is $1$, and similarly $\mathrm{succ}(\mathrm{succ}(0)) : \mathbb{N}$
-which gives us the number $2$ and so on.
+which gives us the number $2$ and so on. We call $0$ and $\mathrm{succ}$ the /constructors/
+for $\mathbb{N}$, a constructor is a /fundamental/ way of making an element of a type,
+these constructors are part of the definition of the type.
 
 *Elimination rule for Natural Numbers* We want to make a function that takes a
 natural number as input. Let's think about one of the simplest such functions,
@@ -312,7 +314,9 @@ wrote the definitional equalities I want satisfied instead of defining the
 function with the recursor. Of course, if one is too sloppy with pattern
 matching notation one can get functions that aren't definable with the recursor,
 but once you've defined a few functions with the recursor you get a lot of
-intuition about what how to translate between pattern matching and recursors.
+intuition about what how to translate between pattern matching and recursors. In fact,
+many programming languages based on type theory can automatically translate between
+recursors and pattern matching.
 
 * Logic 
 Now you may be wondering, "How does this have anything to do
@@ -333,4 +337,125 @@ So what is a proof of "$A$ and $B$"? Well, it is just a pair of proofs,
 one for $A$ and another for $B$, which just an element of the product
 type $A \times B$. Similarly, what is a proof of "$A$ or $B$"? It's just
 either a proof of $A$, or a proof of $B$ or in other terms an element
-of the disjoint union $A + B$.
+of the disjoint union $A + B$. In the same vein, the statment "$A$ implies
+$B$," is proven by giving a process that transforms proofs of $A$ into
+proofs of $B$, in other words a function $A \to B$. The only thing we are missing to do
+propositional logic is the propositions true ($\top$) and false ($\bot$). Let's define them
+using propositions as types, starting with true.
+
+How do you prove the proposition "true." Well, the proposition "true,"
+is trivially true, and in particular you don't need to do anything to
+prove it true. So the corresponding type, which we call $\mathbf{1}$,
+has a constructor that is trivial in the sense that it doesn't require
+any arguments. Let's define $\mathbf{1}$, but again I would advise 
+you to come up with its introduction, elimination and computation rules 
+yourself
+
+*Introduction Rule* We always have $* : \mathbf{1}$.
+
+*Elimination Rule* Given $e_* : X$, we have a function $rec_\mathbf{1}(e_*) : \mathbf{1} \to X$.
+
+*Computation Rule* Assuming $e_* : X$, we have $rec_\mathbf{1}(e_*, *) \equiv e_*$.
+
+Okay, how about "false." How do you prove "false"? The short answer is that you
+can't, "false" is not trivially provable. If our logic is inconsistent, then
+maybe you can make a proof of false but it won't be a simple matter of invoking
+one of the constructors. However, one can prove in the standard foundation of
+mathematics that this logic is consistent, and so it's just as reliable as any
+result in mathematics. Now on to the (very simple definition) of the type 
+$\mathbb{0}$ which corresponds to the proposition "false."
+
+There is no introduction rule, since there shouldn't be a way of proving false.
+
+*Elimination Rule* Many people find this elimination rule tricky, so let me
+phrase it this way. The elimination rules for $A + B$ and $\mathbb{N}$ have two
+cases, since these types have two constructors. The elimination rule for say,
+$\mathbf{1}$ has one case since it has one constructor. Since $\mathbf{0}$ has
+no constructors, it's elimination rule should have no cases, we can always just
+claim $rec_\mathbf{0} : \mathbf{0} \to X$ since there are no constructors to deal with.
+Logicians call this principle /ex falso quodlibet/, which means "from the false
+anything follows," if you assume that false things are true (or equivalently
+that $\mathbf{0}$ has an element), then you can prove whatever you want from
+that.
+
+The last logical notion we need to define, is the proposition "not A". We
+will simply define this as the type $A \to \mathbf{0}$, since the statement
+"A is not true" means the same thing as "A implies a falsehood." Thinking
+in terms of proofs, you can prove the statement "not A", by assuming it to
+be true and showing something that can't be true. However, such a proof 
+is just a function $A \to \mathbf{0}$ which takes a proof of $A$ as input
+and returns a proof of $\mathbf{0}$, a false statement, as output.
+
+Let's prove some logical theorems by writing them out as computer programs
+in System T. Let's first try to prove $(A \to \mathbf{0}) + (B \to \mathbf{0}) 
+\to (A \times B) \to \mathbf{0}$, or in English "not A or not B implies,
+not (A and B)." I'll write the proof using pattern matching notation, it's
+quite a good exercises to translate this into recursors. So,
+there are two possible cases for the first input:
+\begin{align*}
+p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
+p(\mathrm{inl}(a\_1), \cdots) &:\equiv \cdots \\
+p(\mathrm{inr}(b\_2), \cdots) &:\equiv \cdots
+\end{align*} 
+
+After pattern matching on the pair, assuming it is of the form
+$(a, b)$ we get this:
+
+\begin{align*}
+p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
+p(\mathrm{inl}(notA), (a, b)) &:\equiv \cdots \\
+p(\mathrm{inr}(notB), (a, b)) &:\equiv \cdots
+\end{align*} 
+
+Now each of the $\cdots$ has to have the type $\mathbf{0}$, seeing
+as we can't explicitly construct $\mathbf{0}$ we have to use some
+of our input data somehow. However, in the first case, we have
+$a : A$ and $notA : A \to \mathbf{0}$ so $notA(a) : \mathbf{0}$, 
+and we can apply a similar thing to the second case. Here is the finished proof
+
+\begin{align*}
+p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
+p(\mathrm{inl}(notA), (a, b)) &:\equiv notA(a) \\
+p(\mathrm{inr}(notB), (a, b)) &:\equiv notB(b)
+\end{align*} 
+
+Indeed the proof reads almost naturally, once you get used to type theory. The 
+two lines of the type theoretic proof, are exactly the two cases of an informal
+proof, so you could read the proof like this: "Suppose (not A) or (not B), 
+then there are two cases. Firstly, we may have (not A) in which case if 
+we also have A and B, then we have A and so (not A) and A is true which is
+a contradiction. Secondly, we may have (not B), and assuming (A and B) we have
+B and in particular notB and B is true which is a contradiction." This is 
+one of the things that makes type theory an elegant foundation of mathematics,
+whereas traditionally you would have data encoded as sets and you would reason
+about that data separately using logic, both of these mathematical activities
+type theoretically speaking are just programming, and the idea of a type unifies
+them both. 
+
+Anyways, that's quite enough for today. Next time, we'll generalise
+type theory by making every type a value, i.e. an element of another type. This
+will allow us to use propositions as types to reason about our programs, so that
+we can prove that, for example a certain algorithm sorts a list, or more simply
+that addition is commutative. We will introduce new types which exploit this,
+which will lead to a logic with quantifiers and equality. But for now, here are some
+exercises
+
+*Exercises* 
+Prove the following statements using propositions as types:
+- If $A$, then (if $B$ then $A$)
+- If $A$, then $not (not A)$
+- If $A or B$ and $A implies C$ and $B$ implies $C$ then $C$.
+
+Let's say that instead of the recursor $rec\mathbb{N}$, I gave
+you the following function, which basically is the recursor but it
+doesn't keep track of the current number while recursing:
+
+\begin{align*}
+iter : A \to (A \to A) \to \mathbb{N} \to A
+iter(c_0, c_\mathrm{succ}, 0) &:\equiv c_0 \\
+iter(c_0, c_\mathrm{succ}, \mathrm{succ}(n)) &:equiv c_\mathrm{succ}(c_0, c\_mathrm{succ}, n)
+\end{align*}
+
+Can you define $rec_\mathbb{N}$ such that it satisfies the definitional equalities
+we listed before?
+- 
