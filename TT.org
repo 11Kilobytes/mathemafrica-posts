@@ -32,8 +32,10 @@ $\mathbb{N} \to \mathbb{N}$ any value of this type will be a function that maps
 natural numbers to natural numbers. Before we jump in, it'll be useful to
 introduce some notation. An obviously useful piece of notation will be $x : A$,
 which means $x$ has the type $A$, for example we expect to prove that $5 :
-\mathbb{N}$, meaning $5$ is a natural number. Let's start defining the function
-type.
+\mathbb{N}$, meaning $5$ is a natural number. Occasionally, I will say 5 is
+an element of the type of natural numbers, to mean $5 : \mathbb{N}$. 
+
+Let's start defining the function type.
 
 What is a function $A \to B$? It is a machine, that you can put a value of type
 $A$ in and get out a value of type $B$. For example, the statement $(+1) :
@@ -147,7 +149,7 @@ $+(3) : \mathbb{N} \to \mathbb{N}$, is the function that adds three to its input
 a similar way a function with three inputs will have a type like $A \to (B \to (C \to D))$,
 which is quite cumbersome to write. So I'll be lazy and write $f : A \to B \to C \to D$,
 and while I'm at it I'll be lazier and write $f(a, b, c)$ instead of $f(a)(b)(c)$, for
-example.
+example. The idea of defining multi argument functions like this is called /currying/.
 
 Let's move on from function and think about how to define the natural numbers.
 The pattern will be mostly the same, we will give introduction, elimination and
@@ -214,32 +216,121 @@ We have:
 - $rec_\mathbb{N}(e_0, e_\mathrm{succ}) : A \to \mathbb{N}$
 
 Here I'm being lazy again, and I'm leaving out the assumptions $\Gamma$ since
-obviously these rules will apply whatever assumptions you have. The first
-piece of data you need to make a function $f : A \to N$, is the value of 
-$f(0)$, this is given by $e_0$. The next piece of data you need,
-is the value of $f(\mathrm{succ}(n)$ given $n$ and the value of $f(n)$,
-this is provided by $e_\mathrm{succ}(n)$ which is a function. The function 
-$e_\mathrm{succ}$ takes as input $n$, the value of $f(n)$ and returns the
-value of $\mathrm{succ}(n)$, notice how phrasing the elimination rule this
-way makes sure that we can only define sensible functions by recursion.
+obviously these rules will apply whatever assumptions you have. The first piece
+of data you need to make a function $f : A \to \mathbb{N}$, is the value of $f(0)$, this
+is given by $e_0$. The next piece of data you need, is the value of
+$f(\mathrm{succ}(n)$ given $n$ and the value of $f(n)$, this is provided by
+$e_\mathrm{succ}(n)$ which is a function. The function $e_\mathrm{succ}$ takes
+as input $n$, the value of $f(n)$ and returns the value of $\mathrm{succ}(n)$,
+phrasing the elimination rule this way makes sure that we can only
+define sensible functions by recursion.
 
-Let us do an example. We will define $+ : \mathbb{N} \to \mathbb{N} \to \mathbb{N}$: We
-will have to write $+(x) :\equiv \cdots$ where $\cdots$ is a function $\mathbb{N} \to \mathbb{N}$,
-whose definition must depend on $x$. We will define this function by recursion, since we
-want $+(x, 0) :\equiv x$, and $+(x, succ(y)) :\equiv \mathrm{succ}(+(x, y))$, so here we go:
+Let us do an example. We will define $+ : \mathbb{N} \to \mathbb{N} \to
+\mathbb{N}$: We will have to write $+(x) :\equiv \cdots$ where $\cdots$ is a
+function $\mathbb{N} \to \mathbb{N}$, whose definition must depend on $x$. We
+will define this function by recursion, since we want $+(x, 0) :\equiv x$, and
+$+(x, succ(y)) :\equiv \mathrm{succ}(+(x, y))$, so here we go:
 \begin{equation}
-+(x) := rec_{\mathbb{N}}(x, \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}))  
++(x) := rec_{\mathbb{N}}(\mathbb{N} \to \mathbb{N}, \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}), x)  
 \end{equation}
 
-The only thing we need to make sure is that we really have $+(x, 0) \equiv x$ and
-$+(x, \mathrm{succ}(y)) \equiv \mathrm{succ}(y)$, and for this we need a computation rule. 
+Now strictly speaking, we have to write the output type of the recursor but it turns out
+that there is an automatic algorithm for figuring output types, that even works in languages
+much more general than System T. So I'll usually leave them out.
+
+The only thing we need to make sure is that we really have $+(x, 0) \equiv x$
+and $+(x, \mathrm{succ}(y)) \equiv \mathrm{succ}(y)$, and for this we need a
+computation rule.
 
 *Computation rule for functions* Given $e_0 : A$, $e_{\mathrm{succ}} : \mathbb{N} \to A \to A$
 we have:
 \begin{align*}
-rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(0) &\equiv 0 \\
-rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(\mathrm{succ}(n)) &\equiv  
-e_\mathrm{succ}(n, rec_{\mathbb{N}}(e_0, e_{\mathrm{succ}})(n))
+rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(0) &\equiv 0 \\
+rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(\mathrm{succ}(n)) &\equiv  
+e_\mathrm{succ}(n, rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(n))
 \end{align*}
 
-The equalities for $+$ follow as a special case of this. 
+The equalities for $+$ follow as a special case of this. Now it's your turn:
+
+*Exercise* Write the definitions for addition, multiplication and exponentiation
+using $rec_\mathbb{N}$. After that, just so you can see how
+powerful $rec_\mathbb{N}$ can be when combined with other constructs we've
+been talking about define the Ackermann function, $ack : \mathbb{N} \to \mathbb{N} 
+\to \mathbb{N}$, which satisfies the following equalities:
+\begin{align*}
+ack(0, n) &\equiv \mathrm{succ}(n) \\
+ack(\mathrm{succ}(m), 0) &\equiv ack(m, 1) \\
+ack(\mathrm{succ}(m), \mathrm{succ}(n)) &\equiv ack(m, ack(\mathrm{succ}(m), n)) \\
+\end{align*}
+
+The next thing we would want to have in our language is pairs, so that we
+can talk about multiple pieces of data at once. For this we define the product
+type $A \times B$ of pairs $(a, b)$ where $a : A$ and $b : B$, the rules are
+intuitive enough that I would encourage you to figure them out yourself before
+reading on.
+
+*Introduction Rule* Given $a : A$ and $b : B$, we have $(a, b) : A \times B$
+
+*Elimination Rule* Given $f : A \to B \to X$, we have $rec_{A \times B}(f) : (A \times B) \to X$
+
+*Computation Rule* Given $f : A \to B \to X$, $a : A$, and $b : B$ we have:
+\begin{equation*}
+rec_{A \times B}(f)((a, b)) \equiv f(a, b)
+\end{equation*}
+
+Finally, often in programming we have to talk about either
+having one kind of data or a different kind. For example, we might want to say
+"When I look up a value in a table, I either get a result or I get nothing." For 
+this we will introduce the disjoint union $A + B$ which either contains a value
+of type $A$ or a value of type $B$.
+
+*Introduction Rule* Given $a : A$, we have $\mathrm{inl}(a) : A + B$, and similarly
+given $b : B$ we have $\mathrm{inr}(b) : A + B$.
+
+*Elimination Rule* Given $e_\mathrm{inl} : A \to X$ and $e_\mathrm{inr} : B \to X$
+we have $rec_{A + B}(e_\mathrm{inl}, e_\mathrm{inr}) : A + B \to X$, or in other 
+words if you can get an $X$ from either an $A$ or a $B$ then you can get an $X$ from
+a value with the type $A + B$.
+
+*Computation Rule* Given $e_\mathrm{inl} : A \to X$, $e_\mathrm{inr} : B \to X$, 
+we have:
+- Assuming $a : A$, we have $rec_{A + B}(e_\mathrm{inl}, e_\mathrm{inr})(\mathrm{inl}(a)) \equiv a$.
+- Assuming $b : B$, we have $rec_{A + B}(e_\mathrm{inl}, e_\mathrm{inr}(b)(\mathrm{inr}(b)) \equiv b$.
+
+Now, we'll introduce some more abbreviations. It is quite cumbersome to write
+out recursors like $rec_{A + B}$ all the time, so I'll use what's called
+pattern matching notation. Here is an example, we can define $+$ using pattern
+matching like this:
+
+\begin{align*}
+x + 0 &:\equiv x \\
+x + \mathrm{succ}(n) &:\equiv \mathrm{succ}(x + n)
+\end{align*}
+
+So first of all I wrote $x + 0$ for example, instead of $+(x, 0)$, also I just
+wrote the definitional equalities I want satisfied instead of defining the
+function with the recursor. Of course, if one is too sloppy with pattern
+matching notation one can get functions that aren't definable with the recursor,
+but once you've defined a few functions with the recursor you get a lot of
+intuition about what how to translate between pattern matching and recursors.
+
+* Logic 
+Now you may be wondering, "How does this have anything to do
+with mathematics?" Well, after very little more we can already do logic. 
+
+The main idea is that you can define any statement, by describing what
+it would take to prove that statement. For example, the statement 
+"$A$ and $B$ are true," is proven by giving two proofs, you first prove $A$
+and then you prove $B$, this constitutes a /definition/ of the the 
+statement "$A$ and $B$ are true." So we will model propositions as types,
+where a proposition is viewed as the same thing as the type of its proofs.
+
+So let's say you have a proposition $A$, and another one $B$. We will
+call the type whose elements are proofs of $A$, by the same name
+and we will do the same thing with $B$.
+
+So what is a proof of "$A$ and $B$"? Well, it is just a pair of proofs,
+one for $A$ and another for $B$, which just an element of the product
+type $A \times B$. Similarly, what is a proof of "$A$ or $B$"? It's just
+either a proof of $A$, or a proof of $B$ or in other terms an element
+of the disjoint union $A + B$.
