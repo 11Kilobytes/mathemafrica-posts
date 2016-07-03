@@ -37,7 +37,7 @@ an element of the type of natural numbers, to mean $5 : \mathbb{N}$.
 
 Let's start defining the function type.
 
-What is a function $A \to B$? It is a machine, that you can put a value of type
+What is a function $A \to B$? It is a machine, that allows you to put in a value of type
 $A$ in and get out a value of type $B$. For example, the statement $(+1) :
 \mathbb{N} \to \mathbb{N}$ means that assuming you have a natural number $x :
 \mathbb{N}$, you can get another one $(+1)(x) : \mathbb{N}$. To express this
@@ -86,9 +86,8 @@ introduction rule then allows us to form the function $\lambda \, x.
 (+1)((+1)(x)) : \mathbb{N} \to \mathbb{N}$, that takes in $x$ and adds one to it
 twice. I'll introduce some shorthand for this definition. Let us write $f(x) :\equiv y$ to mean
 that the function $f$ is defined to be equal to $\lambda x.y$, so for example we would write
-\begin{equation}
-\mathrm{plus\_two}(x) :\equiv (+1)((+1)(x))
-\end{equation}
+
+$$\mathrm{plus\_two}(x) :\equiv (+1)((+1)(x))$$
 
 The elimination rule tells us that we use a function by applying it to input.
 The natural question is, "What is the resulting value of the expression?" Since,
@@ -168,22 +167,24 @@ these constructors are part of the definition of the type.
 *Elimination rule for Natural Numbers* We want to make a function that takes a
 natural number as input. Let's think about one of the simplest such functions,
 the factorial. The factorial is /defined/ like this, assuming a proper definition of multiplication:
-\begin{align*}
+
+$latex \begin{aligned}
 0! &\equiv 1 \\
 \mathrm{succ}(n)! &\equiv n \cdot n!
-\end{align*}
+\end{aligned}$
 
 At first glance, it does seem kind of circular to define any function in terms of itself,
 like what the second equality tries to do. However, this definition makes sense, and
 always produces a natural number $n! : \mathbb{N}$ for any $n : \mathbb{N}$, here is 
 some intuition about how this works. Say we want to simplify $4!$, we can use the definition
 like this:
-\begin{align*}
+
+$latex \begin{aligned}
 4! &\equiv 3 \cdot 2! \\
    &\equiv 3 \cdot 2 \cdot 1! \\
    &\equiv 3 \cdot 2 \cdot 1 \cdot 0! \\
    &\equiv 3 \cdot 2 \cdot 1 \cdot 1 
-\end{align*} 
+\end{aligned}$
 
 In the above calculation we use the definition $4 \equiv \mathrm{succ}(3)$,
 and apply the second equation above. We repeat this process until we 
@@ -197,10 +198,11 @@ values $f(0) : A$ and $f(\mathrm{succ}(n)) : A$, and we should be able to define
 in terms of $n : \mathbb{N}$ and $f(n) : A$. This elimination rule is kind of 
 intuitive given the introduction rules above. Now, some definitions may look valid, but may run forever
 for example if we define:
-\begin{align*}
+
+$latex \begin{aligned}
 f(0) &\equiv 0 \\
 f(\mathrm{succ}(n)) &\equiv f(\mathrm{succ(n)})
-\end{align*}
+\end{aligned}$
 
 Then, we are simply defining the value of the function as itself, which doesn't
 help one to compute the value of the function. Let's say I try to work out
@@ -233,10 +235,9 @@ Let us do an example. We will define $+ : \mathbb{N} \to \mathbb{N} \to
 function $\mathbb{N} \to \mathbb{N}$, whose definition must depend on $x$. We
 will define this function by recursion, since we want $+(x, 0) :\equiv x$, and
 $+(x, succ(y)) :\equiv \mathrm{succ}(+(x, y))$, so here we go:
-\begin{equation}
-+(x, y) :\equiv rec_\mathbb{N}(\mathbb{N}, x, 
-                \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}))(y)
-\end{equation}
+
+$$+(x, y) :\equiv rec_\mathbb{N}(\mathbb{N}, x, 
+                \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}))(y)$$
 
 Now strictly speaking, we have to write the output type of the recursor but it turns out
 that there is an automatic algorithm for figuring output types, that even works in languages
@@ -248,11 +249,12 @@ computation rule.
 
 *Computation rule for Natural Numbers* Given $e_0 : A$, $e_{\mathrm{succ}} : \mathbb{N} \to A \to A$
 we have:
-\begin{align*}
+
+$latex \begin{aligned}
 rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(0) &\equiv 0 \\
 rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(\mathrm{succ}(n)) &\equiv  
 e_\mathrm{succ}(n, rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(n))
-\end{align*}
+\end{aligned}$
 
 The equalities for $+$ follow as a special case of this. Now it's your turn:
 
@@ -261,11 +263,12 @@ using $rec_\mathbb{N}$. After that, just so you can see how
 powerful $rec_\mathbb{N}$ can be when combined with other constructs we've
 been talking about define the Ackermann function, $ack : \mathbb{N} \to \mathbb{N} 
 \to \mathbb{N}$, which satisfies the following equalities:
-\begin{align*}
+
+$latex \begin{aligned}
 ack(0, n) &\equiv \mathrm{succ}(n) \\
 ack(\mathrm{succ}(m), 0) &\equiv ack(m, 1) \\
 ack(\mathrm{succ}(m), \mathrm{succ}(n)) &\equiv ack(m, ack(\mathrm{succ}(m), n)) \\
-\end{align*}
+\end{aligned}$
 
 So that's the definition of System T. 
 
@@ -280,9 +283,8 @@ reading on.
 *Elimination Rule* Given $f : A \to B \to X$, we have $rec_{A \times B}(f) : (A \times B) \to X$
 
 *Computation Rule* Given $f : A \to B \to X$, $a : A$, and $b : B$ we have:
-\begin{equation*}
-rec_{A \times B}(f)((a, b)) \equiv f(a, b)
-\end{equation*}
+
+$$rec_{A \times B}(f)((a, b)) \equiv f(a, b)$$
 
 Finally, often in programming we have to talk about either
 having one kind of data or a different kind. For example, we might want to say
@@ -308,10 +310,10 @@ out recursors like $rec_{A + B}$ all the time, so I'll use what's called
 pattern matching notation. Here is an example, we can define $+$ using pattern
 matching like this:
 
-\begin{align*}
+$latex \begin{aligned}
 x + 0 &:\equiv x \\
 x + \mathrm{succ}(n) &:\equiv \mathrm{succ}(x + n)
-\end{align*}
+\end{aligned}$
 
 So first of all I wrote $x + 0$ for example, instead of $+(x, 0)$, also I just
 wrote the definitional equalities I want satisfied instead of defining the
@@ -398,20 +400,21 @@ in System T. Let's first try to prove $(A \to \mathbf{0}) + (B \to \mathbf{0})
 not (A and B)." I'll write the proof using pattern matching notation, it's
 quite a good exercise to translate this into recursors. So,
 there are two possible cases for the first input:
-\begin{align*}
-p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
-p(\mathrm{inl}(a\_1), \cdots) &:\equiv \cdots \\
-p(\mathrm{inr}(b\_2), \cdots) &:\equiv \cdots
-\end{align*} 
+
+$latex \begin{aligned}
+p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\ 
+p(\mathrm{inl}(notA), \cdots) &:\equiv \cdots \\
+p(\mathrm{inr}(notB), \cdots) &:\equiv \cdots
+\end{aligned}$
 
 After pattern matching on the pair, assuming it is of the form
 $(a, b)$ we get this:
 
-\begin{align*}
+$latex \begin{aligned}
 p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
 p(\mathrm{inl}(notA), (a, b)) &:\equiv \cdots \\
 p(\mathrm{inr}(notB), (a, b)) &:\equiv \cdots
-\end{align*} 
+\end{aligned}$
 
 Now each of the $\cdots$ has to have the type $\mathbf{0}$, seeing
 as we can't explicitly construct $\mathbf{0}$ we have to use some
@@ -419,11 +422,11 @@ of our input data somehow. However, in the first case, we have
 $a : A$ and $notA : A \to \mathbf{0}$ so $notA(a) : \mathbf{0}$, 
 and we can apply a similar thing to the second case. Here is the finished proof
 
-\begin{align*}
+$latex \begin{aligned}
 p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
 p(\mathrm{inl}(notA), (a, b)) &:\equiv notA(a) \\
 p(\mathrm{inr}(notB), (a, b)) &:\equiv notB(b)
-\end{align*} 
+\end{aligned}$
 
 Indeed the proof reads almost naturally, once you get used to type theory. The 
 two lines of the type theoretic proof, are exactly the two cases of an informal
@@ -457,11 +460,11 @@ Let's say that instead of the recursor $rec_\mathbb{N}$, I gave
 you the following function, which basically is the recursor but it
 doesn't keep track of the current number while recursing:
 
-\begin{align*}
+$latex \begin{aligned}
 iter &: A \to (A \to A) \to \mathbb{N} \to A\\
 iter(c_0, c_\mathrm{succ}, 0) &:\equiv c_0 \\
 iter(c_0, c_\mathrm{succ}, \mathrm{succ}(n)) &:\equiv c_\mathrm{succ}(iter(c_0, c_\mathrm{succ}, n))
-\end{align*}
+\end{aligned}$
 
 Can you define $rec_\mathbb{N}$ such that it satisfies the definitional equalities
 we listed before?
