@@ -91,7 +91,7 @@ that the function $f$ is defined to be equal to $\lambda x.y$, so for example we
 \end{equation}
 
 The elimination rule tells us that we use a function by applying it to input.
-The natural question is, what is the resulting value of the expression. Since,
+The natural question is, "What is the resulting value of the expression?" Since,
 we hope, every function is made using the introduction rule, we just have to
 specify what $(\lambda \, x.\phi)(y)$ means when $y : A$. Intuitively, what
 should happen is that we substitute $y$ for $x$ in $\phi$, however defining this
@@ -188,14 +188,14 @@ like this:
 In the above calculation we use the definition $4 \equiv \mathrm{succ}(3)$,
 and apply the second equation above. We repeat this process until we 
 get to $0$, after which we may apply the first equation. So the reason such
-circular definition works, is because we reduce the number step by step from
+"circular" definition works, is because we reduce the number step by step from
 $\mathrm{succ}(n)$ to $n$ repeatedly until we get $0$, and we know that this will
 eventually reach $0$ since $0$ and $\mathrm{succ}$ are the only ways we gave to 
 /make/ a natural number in the introduction rule. Computer scientists may recognise
-this idea as recursion. In other words, we should define functions $f$ by their
-values $f(0)$ and $f(\mathrm{succ}(n))$, and we should be able to define $f(\mathrm{succ}(n))$
-in terms of $f(n)$, and this elimination rule can be defined in an intuitive way given
-the introduction rules above. Now, some definitions may look valid, but may run forever
+this idea as /recursion/. So, we should define functions $f : \mathbb{N} \to A$ by their
+values $f(0) : A$ and $f(\mathrm{succ}(n)) : A$, and we should be able to define $f(\mathrm{succ}(n))$
+in terms of $n : \mathbb{N}$ and $f(n) : A$. This elimination rule is kind of 
+intuitive given the introduction rules above. Now, some definitions may look valid, but may run forever
 for example if we define:
 \begin{align*}
 f(0) &\equiv 0 \\
@@ -221,11 +221,12 @@ Here I'm being lazy again, and I'm leaving out the assumptions $\Gamma$ since
 obviously these rules will apply whatever assumptions you have. The first piece
 of data you need to make a function $f : A \to \mathbb{N}$, is the value of $f(0)$, this
 is given by $e_0$. The next piece of data you need, is the value of
-$f(\mathrm{succ}(n)$ given $n$ and the value of $f(n)$, this is provided by
+$f(\mathrm{succ}(n))$ given $n$ and the value of $f(n)$, this is provided by
 $e_\mathrm{succ}(n)$ which is a function. The function $e_\mathrm{succ}$ takes
 as input $n$, the value of $f(n)$ and returns the value of $\mathrm{succ}(n)$,
 phrasing the elimination rule this way makes sure that we can only
-define sensible functions by recursion.
+define sensible functions by recursion. We call $rec_\mathbb{N}$ the recursor
+for the type $\mathbb{N}$ of natural numbers.
 
 Let us do an example. We will define $+ : \mathbb{N} \to \mathbb{N} \to
 \mathbb{N}$: We will have to write $+(x) :\equiv \cdots$ where $\cdots$ is a
@@ -233,7 +234,8 @@ function $\mathbb{N} \to \mathbb{N}$, whose definition must depend on $x$. We
 will define this function by recursion, since we want $+(x, 0) :\equiv x$, and
 $+(x, succ(y)) :\equiv \mathrm{succ}(+(x, y))$, so here we go:
 \begin{equation}
-+(x) := rec_{\mathbb{N}}(\mathbb{N} \to \mathbb{N}, \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}), x)  
++(x, y) :\equiv rec_\mathbb{N}(\mathbb{N}, x, 
+                \lambda \, y. \lambda \, \mathrm{x\_plus\_y}. \mathrm{succ}(\mathrm{x\_plus\_y}))(y)
 \end{equation}
 
 Now strictly speaking, we have to write the output type of the recursor but it turns out
@@ -244,7 +246,7 @@ The only thing we need to make sure is that we really have $+(x, 0) \equiv x$
 and $+(x, \mathrm{succ}(y)) \equiv \mathrm{succ}(y)$, and for this we need a
 computation rule.
 
-*Computation rule for functions* Given $e_0 : A$, $e_{\mathrm{succ}} : \mathbb{N} \to A \to A$
+*Computation rule for Natural Numbers* Given $e_0 : A$, $e_{\mathrm{succ}} : \mathbb{N} \to A \to A$
 we have:
 \begin{align*}
 rec_{\mathbb{N}}(A, e_0, e_{\mathrm{succ}})(0) &\equiv 0 \\
@@ -265,7 +267,9 @@ ack(\mathrm{succ}(m), 0) &\equiv ack(m, 1) \\
 ack(\mathrm{succ}(m), \mathrm{succ}(n)) &\equiv ack(m, ack(\mathrm{succ}(m), n)) \\
 \end{align*}
 
-The next thing we would want to have in our language is pairs, so that we
+So that's the definition of System T. 
+
+One of the things we would want to add to System T are pairs, so that we
 can talk about multiple pieces of data at once. For this we define the product
 type $A \times B$ of pairs $(a, b)$ where $a : A$ and $b : B$, the rules are
 intuitive enough that I would encourage you to figure them out yourself before
@@ -323,15 +327,17 @@ Now you may be wondering, "How does this have anything to do
 with mathematics?" Well, after very little more we can already do logic. 
 
 The main idea is that you can define any statement, by describing what
-it would take to prove that statement. For example, the statement 
-"$A$ and $B$ are true," is proven by giving two proofs, you first prove $A$
+it would take to prove that statement. For example, you prove the statement 
+"$A$ and $B$ are true," by giving two proofs, you first prove $A$
 and then you prove $B$, this constitutes a /definition/ of the the 
-statement "$A$ and $B$ are true." So we will model propositions as types,
+statement "$A$ and $B$ are true." So we will model /propositions as types/,
 where a proposition is viewed as the same thing as the type of its proofs.
 
 So let's say you have a proposition $A$, and another one $B$. We will
 call the type whose elements are proofs of $A$, by the same name
-and we will do the same thing with $B$.
+and we will do the same thing with $B$, since there a statements meaning
+is given by the data one needs to prove it there is no need to distinguish
+between the two.
 
 So what is a proof of "$A$ and $B$"? Well, it is just a pair of proofs,
 one for $A$ and another for $B$, which just an element of the product
@@ -363,7 +369,7 @@ maybe you can make a proof of false but it won't be a simple matter of invoking
 one of the constructors. However, one can prove in the standard foundation of
 mathematics that this logic is consistent, and so it's just as reliable as any
 result in mathematics. Now on to the (very simple definition) of the type 
-$\mathbb{0}$ which corresponds to the proposition "false."
+$\mathbf{0}$ which corresponds to the proposition "false."
 
 There is no introduction rule, since there shouldn't be a way of proving false.
 
@@ -390,7 +396,7 @@ Let's prove some logical theorems by writing them out as computer programs
 in System T. Let's first try to prove $(A \to \mathbf{0}) + (B \to \mathbf{0}) 
 \to (A \times B) \to \mathbf{0}$, or in English "not A or not B implies,
 not (A and B)." I'll write the proof using pattern matching notation, it's
-quite a good exercises to translate this into recursors. So,
+quite a good exercise to translate this into recursors. So,
 there are two possible cases for the first input:
 \begin{align*}
 p &: (A \to \mathbf{0}) + (B \to \mathbf{0}) \to (A \times B) \to \mathbf{0} \\
@@ -441,21 +447,21 @@ which will lead to a logic with quantifiers and equality. But for now, here are 
 exercises
 
 *Exercises* 
-Prove the following statements using propositions as types:
-- If $A$, then (if $B$ then $A$)
-- If $A$, then $not (not A)$
-- If $A or B$ and $A implies C$ and $B$ implies $C$ then $C$.
 
-Let's say that instead of the recursor $rec\mathbb{N}$, I gave
+Prove the following statements using propositions as types:
++ If $A$, then (if $B$ then $A$)
++ If $A$, then (not (not $A)$.
++ If $A$ or $B$, and $A$ implies $C$, and $B$ implies $C$ then $C$.
+
+Let's say that instead of the recursor $rec_\mathbb{N}$, I gave
 you the following function, which basically is the recursor but it
 doesn't keep track of the current number while recursing:
 
 \begin{align*}
-iter : A \to (A \to A) \to \mathbb{N} \to A
+iter &: A \to (A \to A) \to \mathbb{N} \to A\\
 iter(c_0, c_\mathrm{succ}, 0) &:\equiv c_0 \\
-iter(c_0, c_\mathrm{succ}, \mathrm{succ}(n)) &:equiv c_\mathrm{succ}(c_0, c\_mathrm{succ}, n)
+iter(c_0, c_\mathrm{succ}, \mathrm{succ}(n)) &:\equiv c_\mathrm{succ}(iter(c_0, c_\mathrm{succ}, n))
 \end{align*}
 
 Can you define $rec_\mathbb{N}$ such that it satisfies the definitional equalities
 we listed before?
-- 
