@@ -1,0 +1,20 @@
+#+TITLE: Dependent Types
+
+This blog post will carry on from the previous one (TODO: link), and introduce
+dependent types. So what is a dependent type? To motivate the idea, let's talk
+about equality. Remember that we interpret propositions as types, so if we
+have $x, y : A$ then the statement "$x$ is equal to $y$," corresponds to some
+type, let's call it $x =_A y$. This type depends on its values, for example
+we expect to be able to prove (i.e. construct), $3 =_{\mathbb{N}} 3$, but not
+to be able to prove $2 =_{\mathbb{N} 3$ and so we will have an equality type
+that depends on its values. This idea is also being explored in various
+programming languages. These languages have a type like $\mathrm{Vec}(x, A)$, 
+where $l : \mathrm{Vec}(x, A)$ means that $l$ is a list of $x$ elements from
+the type $A$. Since the length of the list is part of its type, which is 
+known ahead of time, it is /impossible/ to ask questions like, "What is the
+first element of this empty list?" Indeed, dependent types are so powerful
+that one can write a compiler and be sure that the compiler preserves the 
+meaning of a program. To accomplish this, one could say prove something 
+like. Such generalisations of type systems are
+useful in programming, they allow us to structure information in more general
+and precise ways.  
