@@ -6,7 +6,7 @@ about equality. Remember that we interpret propositions as types, so if we
 have $x, y : A$ then the statement "$x$ is equal to $y$," corresponds to some
 type, let's call it $x =_A y$. This type depends on its values, for example
 we expect to be able to prove (i.e. construct), $3 =_{\mathbb{N}} 3$, but not
-to be able to prove $2 =_{\mathbb{N} 3$ and so we will have an equality type
+to be able to prove $2 =_{\mathbb{N}} 3$ and so we will have an equality type
 that depends on its values. This idea is also being explored in various
 programming languages. These languages have a type like $\mathrm{Vec}(x, A)$, 
 where $l : \mathrm{Vec}(x, A)$ means that $l$ is a list of $x$ elements from
@@ -17,4 +17,72 @@ that one can write a compiler and be sure that the compiler preserves the
 meaning of a program. To accomplish this, one could say prove something 
 like. Such generalisations of type systems are
 useful in programming, they allow us to structure information in more general
-and precise ways.  
+and precise ways. Another reason dependent type theory is interesting,
+is its elegance. Dependent type theory allows values to become part of
+types, and makes every type a value thereby uniting both notions. 
+
+* The Universe 
+The first question we need to ask is, "What is the type of a type?" The
+reason this is important, is that we want to be able to speak of functions
+which return a type. For example, we might have the type $\mathrm{List}(A)$,
+which is the type of finite lists of elements from $A$. So $\mathrm{List}$,
+is a function that takes a type as input and returns one as output, and
+since every function requires an input type and an output type we need
+to be able to answer that question. So, the type of a type is called "the
+Universe," and is denoted $\mathcal{U}$. The thing is, we have to be 
+careful about this self-reference. For example, in Set Theory when we
+give our selves the ability to make "a set of all sets that satisfy some
+property," we get a contradiction (TODO: Russel's paradox) and in a 
+similar way we get a contradiction if we just say that every type's has
+the type $\mathcal{U}$, which would imply that $\mathcal{U} : \mathcal{U}$,
+although the proof of this isn't as elegantly intuitive as Russel's paradox. 
+So instead we postulate an /infinite hierarchy/ of universes, where we
+may have for example $A : \mathcal{U}_0$, and $\mathcal{U}_0 : \mathcal{U}_1$,
+and every universe is a member of a universe one step larger than it. But,
+we will just sweep this complexity under the rug and say things like
+$A : \mathcal{U}$ leaving out the size of the universe, there are formal
+ways to deal with such ambiguity but they are complicated, and we have
+a different path.
+
+
+* Dependent Functions
+Dependent functions are like regular functions $A \to B$, except that
+the type of the output may depend on the input. For example, consider
+the type family of lists with a given length $\mathrm{Vec}(-, -) : 
+\mathbb{N} \to \mathcal{U} \to \mathcal{U}$, so that for example
+the type $\mathrm{Vec}(5, A)$ consists of finite lists of 5 natural
+numbers. Let's say you want to write a function that concatenates two
+such lists, what would the type of this function be? Well the function
+takes any $n_1, n_2 : \mathbb{N}$ which are the lengths of the lists,
+one value with the type $\mathrm{Vec}(n_1, A)$ and another value with
+the type $\mathrm{Vec}(n_2, A)$ and returns a value with the type
+$\mathrm{Vec}(n_1 + n_2, A)$ since when you concatenate two lists the
+length of the result is the sum of the lengths of each list. So the 
+type of output returned by the function depends on the input. 
+
+*Formation Rule* So when can you talk about having a dependent function?
+Well you need an input type $A$, and a type family $P : A \to \mathcal{U}$
+where if you put in $x : A$, then the output will have the type $P(x)$. Given
+these two pieces of data we have the type $\prod_{x : A} P(x)$, of 
+dependent functions which take $x : A$ as input and return $f(x) : P(x)$
+as output. This type is pronounced "pi $x : A$, $P$ of $x$," or we may 
+speak of a function which "takes (any) $x : A$ as input and returns a $P(x)$
+as output."
+
+*Intrdouction Rule* To make a dependent function, just like with a 
+regular function you need an expression that will be the body of
+your dependent function, let's call it $\phi$ like last time. If you
+want your dependent function to have the type $\prod_{x : A}P(x)$, 
+you need to make sure that whenever $x : A$, $\phi : P(x)$. Given
+this assumption $\lambda x \, . \phi : \prod_{x : A} P(x)$.
+
+*Elimination Rule* Assume $f : \prod_{x : A} P(x)$ then one may use
+the dependent function $f$ by applying it to input. Given $x : A$,
+we have $f(x) : P(x)$.
+
+*Computation Rule* Just the same as regular functions, 
+$(\lambda x \,. \phi)(y) \equiv \phi[x/y]$.
+
+*Uniqueness Principle* Given $f : \prod_{x : A} P(x)$ we
+have $f \equiv \lambda x \,. f(x)$.
+
