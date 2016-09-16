@@ -192,7 +192,7 @@ get to $0$, after which we may apply the first equation. So the reason such
 "circular" definition works, is because we reduce the number step by step from
 $\mathrm{succ}(n)$ to $n$ repeatedly until we get $0$, and we know that this will
 eventually reach $0$ since $0$ and $\mathrm{succ}$ are the only ways we gave to 
-/make/ a natural number in the introduction rule. Computer scientists may recognise
+/make/ a natural number given in the introduction rule. Computer scientists may recognise
 this idea as /recursion/. So, we should define functions $f : \mathbb{N} \to A$ by their
 values $f(0) : A$ and $f(\mathrm{succ}(n)) : A$, and we should be able to define $f(\mathrm{succ}(n))$
 in terms of $n : \mathbb{N}$ and $f(n) : A$. This elimination rule is kind of 

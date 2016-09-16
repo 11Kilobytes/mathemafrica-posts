@@ -8,20 +8,20 @@ type, let's call it $x =_A y$. This type depends on its values, for example
 we expect to be able to prove (i.e. construct), $3 =_{\mathbb{N}} 3$, but not
 to be able to prove $2 =_{\mathbb{N}} 3$ and so we will have an equality type
 that depends on its values. This idea is also being explored in various
-programming languages. These languages have a type like $\mathrm{Vec}(x, A)$, 
+programming languages. These languages have a type like $\mathrm{Vec}(x, A)$,
 where $l : \mathrm{Vec}(x, A)$ means that $l$ is a list of $x$ elements from
-the type $A$. Since the length of the list is part of its type, which is 
+the type $A$. Since the length of the list is part of its type, which is
 known ahead of time, it is /impossible/ to ask questions like, "What is the
 first element of this empty list?" Indeed, dependent types are so powerful
-that one can write a compiler and be sure that the compiler preserves the 
-meaning of a program. To accomplish this, one could say prove something 
+that one can write a compiler and be sure that the compiler preserves the
+meaning of a program. To accomplish this, one could say prove something
 like. Such generalisations of type systems are
 useful in programming, they allow us to structure information in more general
 and precise ways. Another reason dependent type theory is interesting,
 is its elegance. Dependent type theory allows values to become part of
-types, and makes every type a value thereby uniting both notions. 
+types, and makes every type a value thereby uniting both notions.
 
-* The Universe 
+* The Universe
 The first question we need to ask is, "What is the type of a type?" The
 reason this is important, is that we want to be able to speak of functions
 which return a type. For example, we might have the type $\mathrm{List}(A)$,
@@ -29,13 +29,13 @@ which is the type of finite lists of elements from $A$. So $\mathrm{List}$,
 is a function that takes a type as input and returns one as output, and
 since every function requires an input type and an output type we need
 to be able to answer that question. So, the type of a type is called "the
-Universe," and is denoted $\mathcal{U}$. The thing is, we have to be 
+Universe," and is denoted $\mathcal{U}$. The thing is, we have to be
 careful about this self-reference. For example, in Set Theory when we
 give our selves the ability to make "a set of all sets that satisfy some
-property," we get a contradiction (TODO: Russel's paradox) and in a 
+property," we get a contradiction (TODO: Russel's paradox) and in a
 similar way we get a contradiction if we just say that every type's has
 the type $\mathcal{U}$, which would imply that $\mathcal{U} : \mathcal{U}$,
-although the proof of this isn't as elegantly intuitive as Russel's paradox. 
+although the proof of this isn't as elegantly intuitive as Russel's paradox.
 So instead we postulate an /infinite hierarchy/ of universes, where we
 may have for example $A : \mathcal{U}_0$, and $\mathcal{U}_0 : \mathcal{U}_1$,
 and every universe is a member of a universe one step larger than it. But,
@@ -44,45 +44,121 @@ $A : \mathcal{U}$ leaving out the size of the universe, there are formal
 ways to deal with such ambiguity but they are complicated, and we have
 a different path.
 
+Already we have added quite a lot of power to our programming language. For
+example, consider the type $\mathrm{Vec}(n, A)$ of finite vectors of elements
+each of the type $A$. We may define it by recursion like this:
+\begin{align*}
+\mathrm{Vec} : \mathbb{N} \mathrm{U} \to \mathbb{U}
+\mathrm{Vec}(0, A) :\equiv \mathbb{1}
+\mathrm{Vec}(\mathrm{succ}(n), A) :\equiv A \cross \mathrm{Vec}(n, A)
+\end{align*}
+
+Or in mathematical English, we define the type of vectors with
+zero length as $\mathbb{1}$. Why does this make sense? A vector 
+of length zero contains no elements of $A$, and yet one should
+be able to trivially construct an empty vector without specifying
+any information. So, we define a vector of length $0$ in $A$ to
+be an element of $\mathbb{1}$ which can be trivially constructed.
+
+The next definition says that a vector of length $\mathrm{succ}(n)$,
+in $A$ is the same as an element of $A$ paired with a vector of
+length $n$ in $A$. 
 
 * Dependent Functions
 Dependent functions are like regular functions $A \to B$, except that
-the type of the output may depend on the input. For example, consider
-the type family of lists with a given length $\mathrm{Vec}(-, -) : 
-\mathbb{N} \to \mathcal{U} \to \mathcal{U}$, so that for example
-the type $\mathrm{Vec}(5, A)$ consists of finite lists of 5 natural
-numbers. Let's say you want to write a function that concatenates two
-such lists, what would the type of this function be? Well the function
-takes any $n_1, n_2 : \mathbb{N}$ which are the lengths of the lists,
+the type of the output may depend on the input. For example, 
+what would be the type of the function that concatenates the vectors
+that we defined earlier? Well the function takes any $n_1, n_2 : \mathbb{N}$ which are the lengths of the vectors,
 one value with the type $\mathrm{Vec}(n_1, A)$ and another value with
 the type $\mathrm{Vec}(n_2, A)$ and returns a value with the type
-$\mathrm{Vec}(n_1 + n_2, A)$ since when you concatenate two lists the
-length of the result is the sum of the lengths of each list. So the 
-type of output returned by the function depends on the input. 
+$\mathrm{Vec}(n_1 + n_2, A)$ since when you concatenate two vector the
+length of the result is the sum of the lengths of each vector. So the
+type of output returned by the function depends on the input.
 
 *Formation Rule* So when can you talk about having a dependent function?
 Well you need an input type $A$, and a type family $P : A \to \mathcal{U}$
 where if you put in $x : A$, then the output will have the type $P(x)$. Given
-these two pieces of data we have the type $\prod_{x : A} P(x)$, of 
+these two pieces of data we have the type $\prod_{x : A} P(x) : \mathcal{U}$, of
 dependent functions which take $x : A$ as input and return $f(x) : P(x)$
-as output. This type is pronounced "pi $x : A$, $P$ of $x$," or we may 
+as output. This type is pronounced "pi $x$ in $A$, $P$ of $x$," or we may
 speak of a function which "takes (any) $x : A$ as input and returns a $P(x)$
 as output."
 
-*Intrdouction Rule* To make a dependent function, just like with a 
+For example, let's assume that you have a type $A$ and an element
+$x : A$. Consider the function $\mathrm{repeat}$, which takes
+a number $n : \mathbb{N}$ and gives you back a list with $n$
+copies of $x$, so for example when we put $3$ we get back
+$[x, x, x]$. Given those assumption, what type will $\mathrm{repeat}$
+have, well if we implement it correctly we will have
+$\mathrm{repeat} : \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A)$ which
+means that $\mathrm{repeat}$ takes a number $n$ and outputs a vector
+of length $n$ with elements from $A$. The formation rule allows us
+to say that $\prod_{n : \mathbb{N}} \mathrm{Vec}(n, A)$ is a type,
+since $\mathrm{Vec}(-, A)$ is a type family over $\mathbb{N}$,
+since if you plug in a natural number $n : \mathbb{N}$ you get a type
+$\mathrm{Vec}(n, A)$. From now on however, I will leave out formation
+rules they are pretty obvious most of the time.
+
+*Introduction Rule* To make a dependent function, just like with a
 regular function you need an expression that will be the body of
 your dependent function, let's call it $\phi$ like last time. If you
-want your dependent function to have the type $\prod_{x : A}P(x)$, 
+want your dependent function to have the type $\prod_{x : A}P(x)$,
 you need to make sure that whenever $x : A$, $\phi : P(x)$. Given
 this assumption $\lambda x \, . \phi : \prod_{x : A} P(x)$.
 
 *Elimination Rule* Assume $f : \prod_{x : A} P(x)$ then one may use
-the dependent function $f$ by applying it to input. Given $x : A$,
-we have $f(x) : P(x)$.
+the dependent function $f$ by applying it to input. So, given $x : A$,
+we have $f(x) : P(x)$. Let me give an example of this rule, remember
+the function $\mathrm{repeat} : \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A)$,
+what happens if you plug in $3 : \mathbb{N}$ for the input $n$? Well
+you get a vector of length 3 in $A$ called
+ $f(3) : \mathrm{Vec}(3, A)$ as output.
 
-*Computation Rule* Just the same as regular functions, 
+*Computation Rule* Just the same as regular functions,
 $(\lambda x \,. \phi)(y) \equiv \phi[x/y]$.
 
 *Uniqueness Principle* Given $f : \prod_{x : A} P(x)$ we
 have $f \equiv \lambda x \,. f(x)$.
 
+Just like before, dependent functions with multiple inputs will
+be defined using nested dependent functions. So for example,
+if I have a dependent function with two inputs $a : A$ and $b : B$,
+I will create something with the type $\prod_{a : A}
+\left( \prod_{b : B} \cdots \right)$, which I'll simply write as
+$\prod_{a : A} \prod_{b : B} \cdots$. Also, if I have a dependent
+function which takes multiple inputs with the same type, say
+$x : A$ and $y : A$, I'll write the type as $\prod_{x, y : A}$ for short.
+
+** Induction
+How do you construct a dependent function out of the natural
+numbers? So, let's say we have a type family $P : \mathbb{N} \to \mathcal{U}$, and
+we want to make a function $f$ with $f : \prod_{x : A} P(x)$. How do we do this?
+The idea is very similar to the recursion principle we covered last time.
+
+First of all, we need the value of the function on $0$. Since our function $f$ is
+supposed to have the type $\prod_{x : A} P(x)$, when we put in $0$ for $x$
+we expect to get some value $f(0) : P(0)$. So let's assume $e_0 : P(0)$.
+
+Just like with recursion, we need to handle natural numbers of the form
+$\mathrm{succ}(n)$ somehow. Generalising the idea from the recursion
+principle, we assume $e_\mathrm{succ} : \prod_{n : \mathbb{N}} P(n) \to P(n + 1)$.
+The function $e_\mathrm{succ}$ maps any natural number $n$ and the value of
+the function on $n$ which has the type $P(n)$ to the value of the function
+on $\mathrm{succ}(n)$ which has the type $P(\mathrm{succ}(n))$.
+
+Given these two pieces of information $e_0$ and $e_\mathrm{succ}$,
+we can construct a dependent function $f : \prod_{n : \mathbb{N}} P(n)$. So that's
+the dependent version of the elimination rule for natural numbers. The next question
+is, "What happens when I apply input to this function $f$?" The resulting
+computation rule is exactly the same as in the recursive case:
+
+\begin{align*}
+f(0) &\equiv e_0 \\
+f(\mathrm{succ}(n)) &\equiv e_\mathrm{succ}(n, f(n))
+\end{align*}
+
+(section of Vec(-, A) given an element of A)
+
+* Dependent pairs
+Dependent pairs generalise the product types $A \cross B$. A dependent type is a pair 
+of things where the type of the second depends on the value of the first.
