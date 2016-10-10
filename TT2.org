@@ -48,17 +48,17 @@ Already we have added quite a lot of power to our programming language. For
 example, consider the type $\mathrm{Vec}(n, A)$ of finite vectors of elements
 each of the type $A$. We may define it by recursion like this:
 \begin{align*}
-\mathrm{Vec} : \mathbb{N} \mathrm{U} \to \mathbb{U}
-\mathrm{Vec}(0, A) :\equiv \mathbb{1}
-\mathrm{Vec}(\mathrm{succ}(n), A) :\equiv A \cross \mathrm{Vec}(n, A)
+\mathrm{Vec} &: \mathbb{N} \to \mathcal{U} \to \mathcal{U} \\
+\mathrm{Vec}(0, A) &:\equiv \mathbf{1} \\
+\mathrm{Vec}(\mathrm{succ}(n), A) &:\equiv A \times \mathrm{Vec}(n, A)
 \end{align*}
 
 Or in mathematical English, we define the type of vectors with
-zero length as $\mathbb{1}$. Why does this make sense? A vector 
+zero length as $\mathbf{1}$. Why does this make sense? A vector 
 of length zero contains no elements of $A$, and yet one should
 be able to trivially construct an empty vector without specifying
 any information. So, we define a vector of length $0$ in $A$ to
-be an element of $\mathbb{1}$ which can be trivially constructed.
+be an element of $\mathbf{1}$ which can be trivially constructed.
 
 The next definition says that a vector of length $\mathrm{succ}(n)$,
 in $A$ is the same as an element of $A$ paired with a vector of
@@ -146,8 +146,12 @@ The function $e_\mathrm{succ}$ maps any natural number $n$ and the value of
 the function on $n$ which has the type $P(n)$ to the value of the function
 on $\mathrm{succ}(n)$ which has the type $P(\mathrm{succ}(n))$.
 
+The induction rule is also called the dependent elimination rule, or the dependent
+recursion rule since it is a generalisation to the setting of dependent types 
+of the recusion/elimination rule we talked about last time.
+
 Given these two pieces of information $e_0$ and $e_\mathrm{succ}$,
-we can construct a dependent function $f : \prod_{n : \mathbb{N}} P(n)$. So that's
+we can construct a dependent function $\mathrm{ind}_\mathbb{N}(e_0, e_\mathrm{succ}) : \prod_{n : \mathbb{N}} P(n)$. So that's
 the dependent version of the elimination rule for natural numbers. The next question
 is, "What happens when I apply input to this function $f$?" The resulting
 computation rule is exactly the same as in the recursive case:
@@ -157,8 +161,152 @@ f(0) &\equiv e_0 \\
 f(\mathrm{succ}(n)) &\equiv e_\mathrm{succ}(n, f(n))
 \end{align*}
 
-(section of Vec(-, A) given an element of A)
+Let's apply this rule to define a function $\mathrm{repeat} : \prod_{A : U} \prod_{a : A} \prod_{n : \mathbb{N}} 
+\mathrm{Vec}(A, n)$, intuitively what $\mathrm{repeat}$ does is to take $a : A$ and
+$n : \mathbb{N}$ and give me back the vector $[a, a, a, .., a] : \mathrm{Vec}(n, A)$ which
+has $n$ copies of $a$. Let's start by introducing two variables for $A : \mathcal{U}$ and $a : A$,
+and filling in a template for the induction principle for the natural numbers, since we want
+to define a dependent function that takes any $n : \mathbb{N}$ and gives back a vector
+of $n$ copies of $a$.
 
+\begin{align*}
+\mathrm{repeat} &: \prod_{A : U} \prod_{a : A} \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A) \\
+\mathrm{repeat}(A, a) &:\equiv \mathrm{ind}_\mathbb{N}(e_0, e_\mathrm{succ}) \\
+\end{align*}
+
+So we have to define $e_0$, and $e_\mathrm{succ}$. Remember that $e_0$ is the value
+of the function that gives a vector of $n$ copies of $a$ when $n \equiv 0$. It's
+type is, recalling the definition, $Vec(0, A) \equiv \mathbf{1}$. So we have to 
+construct an element of $\mathbf{1}$, and so we can trivially choose $* : \mathbf{1}$
+for this. So we can put $*$ for $e_0$ in the template and get this:
+
+\begin{align*}
+\mathrm{repeat} &: \prod_{A : U} \prod_{a : A} \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A) \\
+\mathrm{repeat}(A, a) &:\equiv \mathrm{ind}_\mathbb{N}(*, e_\mathrm{succ}) \\
+\end{align*}
+
+Now we have to fill in $e_\mathrm{succ}$, what does it do? It is the recursive step that 
+takes any $n : \mathbb{N}$, and the value of the function on $n$ and gives us back the 
+value of the function on $\mathrm{succ}(n)$. Remember, we are trying to define a function
+that takes $n$ and gives you back a vector $n$ copies of $n$. The value of this function
+on $n$, will be a vector on $n$ elements in $A$ it will have the type $\mathrm{Vec}(n, A)$. 
+Similarly, the value of this function on $\mathrm{succ}(n)$ will have the type 
+$\mathrm{Vec}(\mathrm{succ}(n), A)$, so to summarise we have to define:
+\begin{equation}
+e_\mathrm{succ} : \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A) \to \mathrm{Vec}(\mathrm{succ}(n), A)
+\end{equation}
+
+Now let's say $n : \mathbb{N}$, and $\mathrm{repeat}_n : \mathrm{Vec}(n, A)$ are the inputs
+to $e_\mathrm{succ}$, what should the output be? First of all we can rewrite the type 
+of the output using the definition,  $\mathrm{Vec}(\mathrm{succ}(n), A) \equiv A \times \mathrm{Vec}(n, A)$,
+which means that we have to output a pair of an element in $A$ and a vector of $n$ elements from $A$.
+Since $e_\mathrm{succ}$ should add another copy of $a$ to the start of the vector $\mathrm{repeat}_n$ we have
+no choice but to output the pair $(a, \mathrm{repeat}_n)$. So we should define $e_\mathrm{succ} :\equiv
+\lambda n \,. \lambda \mathrm{repeat}_n \, . (n, \mathrm{repeat}_n)$, and plugging this in back into
+our template we get the following completed definition:
+
+\begin{align*}
+\mathrm{repeat} &: \prod_{A : U} \prod_{a : A} \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A) \\
+\mathrm{repeat}(A, a) &:\equiv \mathrm{ind}_\mathbb{N}(*, \lambda \, n. \lambda \, \mathrm{repeat}_n. (n, \mathrm{repeat}_n)) \\
+\end{align*}
+
+Notice how we did not define repeat, and then prove separately that repeat gives a vector
+of length $n$, rather the type of $\mathrm{repeat}$ shows that it gives a vector with
+the correct length /by construction/.
 * Dependent pairs
-Dependent pairs generalise the product types $A \cross B$. A dependent type is a pair 
-of things where the type of the second depends on the value of the first.
+On to dependent pairs. Dependent pairs generalise the product types $A \times B$. A dependent type is a pair 
+of things where the type of the second depends on the value of the first. The notation
+for the type is $\sum_{x : A} P(x)$, where $A : \mathcal{U}$ is a type and $P : A \to \mathcal{U}$
+is a type family. 
+
+*Introduction Rule* Given an appropriate pair of elements $x : A$, $y : P(x)$ we may form
+$(x, y) : \sum_{x : A} P(x)$.
+
+*Recursion principle* Suppose we want to construct a function from the type of 
+dependent pairs $\sum_{x : A} P(x)$ to some other type $X : U$. Just like with the other
+types, the data we need will reflect the constructor for dependent pairs. Given a way
+to map the components of a dependent pair into $X$:
+\begin{equation*}
+e_p : \prod_{x : A} P(x) \to X 
+\end{equation*}
+
+There exists a function $\mathrm{rec}_{\sum_{x : A} P(x)} : \sum_{x : A} P(x)$ that 
+satisfies the following:
+
+*Computation rule*
+\begin{equation*}
+\mathrm{rec}_{\sum_{x : A} P(x)}((x, y)) \equiv e_p(x, y)
+\end{equation*}
+
+We will give an example of these rules later on. 
+
+* Dependent types and logic 
+Let's talk about the logical interpretation of dependent types. First, in 
+logical terms what is a type family. What does $P : A \to \mathcal{U}$
+mean in the context of logic. Well, $P$ is a function that associates
+every element of $A$ to a type. Since propositions are types, $P$
+is a proposition that depends on an elment of $A$, that is to say a /predicate/
+on $A$. 
+
+Now what about dependent functions? Given a type family $P : A \to \mathcal{U}$,
+the dependent function type $\prod_{x : A} P(x)$ is a way to map every element
+$x : A$ to some value in $P(x)$. Logically speaking, we are mapping any
+element $x : A$ to a corresponding proof of some proposition $P(x) : \mathcal{U}$,
+since propositions are types and in particular proving a proposition is
+just constructing an element of a particular type. So in other words we are showing that the proposition
+$P(x)$ holds for every $x : A$, this means that the dependent function type $\prod_{x : A} P(x)$
+is the way we represent "for all" statements in type theory. To put it another way,
+the statement "for all $x : A$, P(x)" corresponds to the type $\prod_{x : A} P(x)$.
+
+This clarifies why we call the dependent generalisation of the recursion rule,
+the "induction principle." On the natural numbers for example, the induction
+principle shows you how to construct a dependent function $\prod_{x : \mathbb{N}} P(x)$
+by handling the base case with some $e_0 : P(0)$ and the recursive case with 
+some $e_\mathrm{succ} : \prod_{n : N} P(n) \to \mathcal{U}$. The usual principle
+of mathematical induction that gives a method for proving for all statements,
+is just a special case of the induction principle for natural numbers.
+
+Finally what about dependent pairs? Try to guess what their logical interpretation is
+before reading on. The type of dependent pairs $\sum_{x : A} P(x)$ is generated
+by pairs $(x, y) : \sum_{x : A} P(x)$ where $x : A$ and $y : P(x)$. So dependent pairs
+are pairs of elements $x : A$ together with proofs that some proposition $P$ holds
+for that element. Naturally, we interpret the type of dependent pairs $\sum_{x : A} P(x)$,
+as the proposition "there exists an element $x : A$ such that $P(x)$." What the recursion
+rule for dependent pairs says, logically speaking is that given a proposition $X : \mathcal{U}$,
+we can show that $\sum_{x : A} P(x)$ implies $X$ by showing $\prod_{x : A} P(x) \to X$. 
+Or in more words, by assuming an arbitrary element of $x : A$ exists, such that $P(x)$ and deducing $X$ 
+from that.
+
+As an application of everything we've learned so far, we will prove the "type theoretic 
+axiom of choice." Suppose we are given $A : \mathcal{U}$, $B : A \to \mathcal{U}$, and
+a type family $P : \prod_{x : A} B(x) \to \mathcal{U}$
+
+\begin{equation*}
+AC : \left(\prod_{x : A} \sum_{b : B(x)} P(x, b)\right) \to \sum_{f : \prod_{x : A} B(x)} \prod_{x : A} P(x, f(x))
+\end{equation*}
+
+This seems at first glance to be very similar to the set theoretic axiom of choice. We
+have a type $A$, and a family of types $B$ associated with every element of $A$. If,
+for every $x : A$ there is at least one $b : B(x)$ both satisfying some property $P$
+then there is a way of mapping these elements $x : A$ to a choice of $b : B(x)$
+called $f$. This $f$ satisfies the property that the chosen elements $f(x) : B(x)$
+all satisfy $P$. 
+
+The proof is quite trivial, I will write it with pattern matching notation first:
+\begin{equation*}
+AC(s) :\equiv (\cdots, \cdots)
+\end{equation*}
+
+Let us first construct the first component of the 
+output of $AC$, which is a function $f : \prod_{x : A} B(x)$. Let $x : A$,
+we need to construct $B(x)$, however we can get the first component of
+$s(x) : \sum_{b : B(x)} P(x, b)$ so we define $f :\equiv \lambda x \, \cdot 
+\mathrm{pr}_1(s(x))$
+
+\begin{equation*}
+AC(s) :\equiv (\lambda \, \cdot \mathrm{pr}_1(s(x)), \cdots)
+\end{equation*}
+
+Now what about the second component, it needs to be a function
+$\prod_{x : A} P(x, f(x))$ and since $f(x) \equiv \mathrm{pr}_1(s(x))$
+we just need to construct $\prod_{x : A} P(x, \mathrm{pr}_1(s(x)))$. Now,
