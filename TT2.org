@@ -1,29 +1,28 @@
 #+TITLE: Dependent Types
 
-This blog post will carry on from the previous one (TODO: link), and introduce
-dependent types. So what is a dependent type? To motivate the idea, let's talk
+This blog post will carry on from the [[http://www.mathemafrica.org/?p=13035][previous one]], and introduce
+dependent types. So what is a dependent type? To motivate the idea let's talk
 about equality. Remember that we interpret propositions as types, so if we
-have $x, y : A$ then the statement "$x$ is equal to $y$," corresponds to some
+have $x, y : A$ then the statement "$x$ is equal to $y$" corresponds to some
 type, let's call it $x =_A y$. This type depends on its values, for example
-we expect to be able to prove (i.e. construct), $3 =_{\mathbb{N}} 3$, but not
+we expect to be able to prove (i.e. construct) $3 =_{\mathbb{N}} 3$, but not
 to be able to prove $2 =_{\mathbb{N}} 3$ and so we will have an equality type
 that depends on its values. This idea is also being explored in various
 programming languages. These languages have a type like $\mathrm{Vec}(x, A)$,
 where $l : \mathrm{Vec}(x, A)$ means that $l$ is a list of $x$ elements from
-the type $A$. Since the length of the list is part of its type, which is
+the type $A$. Since the length of the list is part of its type which is
 known ahead of time, it is /impossible/ to ask questions like, "What is the
-first element of this empty list?" Indeed, dependent types are so powerful
+first element of this empty list?" Indeed dependent types are so powerful
 that one can write a compiler and be sure that the compiler preserves the
-meaning of a program. To accomplish this, one could say prove something
-like. Such generalisations of type systems are
+meaning of a program. Such generalisations of type systems are
 useful in programming, they allow us to structure information in more general
-and precise ways. Another reason dependent type theory is interesting,
+and precise ways. Another reason dependent type theory is interesting
 is its elegance. Dependent type theory allows values to become part of
 types, and makes every type a value thereby uniting both notions.
 
 * The Universe
 The first question we need to ask is, "What is the type of a type?" The
-reason this is important, is that we want to be able to speak of functions
+reason this is important is that we want to be able to speak of functions
 which return a type. For example, we might have the type $\mathrm{List}(A)$,
 which is the type of finite lists of elements from $A$. So $\mathrm{List}$,
 is a function that takes a type as input and returns one as output, and
@@ -32,20 +31,21 @@ to be able to answer that question. So, the type of a type is called "the
 Universe," and is denoted $\mathcal{U}$. The thing is, we have to be
 careful about this self-reference. For example, in Set Theory when we
 give our selves the ability to make "a set of all sets that satisfy some
-property," we get a contradiction (TODO: Russel's paradox) and in a
+property," we get a contradiction called[[https://en.wikipedia.org/wiki/Russell%2527s_paradox][ Russel's paradox]]. In a
 similar way we get a contradiction if we just say that every type's has
-the type $\mathcal{U}$, which would imply that $\mathcal{U} : \mathcal{U}$,
-although the proof of this isn't as elegantly intuitive as Russel's paradox.
+the type $\mathcal{U}$, which would imply that $\mathcal{U} : \mathcal{U}$
+and this can be used to derive a paradox of self reference. However, the
+proof of this isn't as elegantly intuitive as Russel's paradox.
 So instead we postulate an /infinite hierarchy/ of universes, where we
 may have for example $A : \mathcal{U}_0$, and $\mathcal{U}_0 : \mathcal{U}_1$,
-and every universe is a member of a universe one step larger than it. But,
+and every universe is a member of a universe one step larger than it. But
 we will just sweep this complexity under the rug and say things like
 $A : \mathcal{U}$ leaving out the size of the universe, there are formal
-ways to deal with such ambiguity but they are complicated, and we have
+ways to deal with such ambiguity but they are complicated and we have
 a different path.
 
 Already we have added quite a lot of power to our programming language. For
-example, consider the type $\mathrm{Vec}(n, A)$ of finite vectors of elements
+example, consider the type $\mathrm{Vec}(n, A)$ of finite vectors of $n$ elements
 each of the type $A$. We may define it by recursion like this:
 \begin{align*}
 \mathrm{Vec} &: \mathbb{N} \to \mathcal{U} \to \mathcal{U} \\
@@ -104,7 +104,7 @@ regular function you need an expression that will be the body of
 your dependent function, let's call it $\phi$ like last time. If you
 want your dependent function to have the type $\prod_{x : A}P(x)$,
 you need to make sure that whenever $x : A$, $\phi : P(x)$. Given
-this assumption $\lambda x \, . \phi : \prod_{x : A} P(x)$.
+this assumption $\lambda \, x . \phi : \prod_{x : A} P(x)$.
 
 *Elimination Rule* Assume $f : \prod_{x : A} P(x)$ then one may use
 the dependent function $f$ by applying it to input. So, given $x : A$,
@@ -115,10 +115,10 @@ you get a vector of length 3 in $A$ called
  $f(3) : \mathrm{Vec}(3, A)$ as output.
 
 *Computation Rule* Just the same as regular functions,
-$(\lambda x \,. \phi)(y) \equiv \phi[x/y]$.
+$(\lambda \, x. \phi)(y) \equiv \phi[x/y]$.
 
 *Uniqueness Principle* Given $f : \prod_{x : A} P(x)$ we
-have $f \equiv \lambda x \,. f(x)$.
+have $f \equiv \lambda \, x . f(x)$.
 
 Just like before, dependent functions with multiple inputs will
 be defined using nested dependent functions. So for example,
@@ -132,7 +132,7 @@ $x : A$ and $y : A$, I'll write the type as $\prod_{x, y : A}$ for short.
 ** Induction
 How do you construct a dependent function out of the natural
 numbers? So, let's say we have a type family $P : \mathbb{N} \to \mathcal{U}$, and
-we want to make a function $f$ with $f : \prod_{x : A} P(x)$. How do we do this?
+we want to make a function $f$ with $f : \prod_{x : \mathbb{N}} P(x)$. How do we do this?
 The idea is very similar to the recursion principle we covered last time.
 
 First of all, we need the value of the function on $0$. Since our function $f$ is
@@ -202,12 +202,12 @@ of the output using the definition,  $\mathrm{Vec}(\mathrm{succ}(n), A) \equiv A
 which means that we have to output a pair of an element in $A$ and a vector of $n$ elements from $A$.
 Since $e_\mathrm{succ}$ should add another copy of $a$ to the start of the vector $\mathrm{repeat}_n$ we have
 no choice but to output the pair $(a, \mathrm{repeat}_n)$. So we should define $e_\mathrm{succ} :\equiv
-\lambda n \,. \lambda \mathrm{repeat}_n \, . (n, \mathrm{repeat}_n)$, and plugging this in back into
+\lambda \, n. \lambda \, \mathrm{repeat}_n. (a, \mathrm{repeat}_n)$, and plugging this in back into
 our template we get the following completed definition:
 
 \begin{align*}
 \mathrm{repeat} &: \prod_{A : U} \prod_{a : A} \prod_{n : \mathbb{N}} \mathrm{Vec}(n, A) \\
-\mathrm{repeat}(A, a) &:\equiv \mathrm{ind}_\mathbb{N}(*, \lambda \, n. \lambda \, \mathrm{repeat}_n. (n, \mathrm{repeat}_n)) \\
+\mathrm{repeat}(A, a) &:\equiv \mathrm{ind}_\mathbb{N}(*, \lambda \, n. \lambda \, \mathrm{repeat}_n. (a, \mathrm{repeat}_n)) \\
 \end{align*}
 
 Notice how we did not define repeat, and then prove separately that repeat gives a vector
@@ -233,12 +233,63 @@ e_p : \prod_{x : A} P(x) \to X
 There exists a function $\mathrm{rec}_{\sum_{x : A} P(x)} : \sum_{x : A} P(x)$ that 
 satisfies the following:
 
-*Computation rule*
+*Computation rule* Given $x : A$, and $y : P(x)$ we have:
 \begin{equation*}
 \mathrm{rec}_{\sum_{x : A} P(x)}((x, y)) \equiv e_p(x, y)
 \end{equation*}
 
-We will give an example of these rules later on. 
+*Induction principle* Let's now generalise the recursion rule to the 
+dependent case. Suppose we have a type family $X : \sum_{x : A} P(x) \to \mathcal{U}$,
+equipped with data that reflects the constructor for a dependent pair,
+\begin{equation*}
+e_p : \prod_{x : A} \prod_{y : P(x)} P((x, y)) \\
+\end{equation*}
+
+Then we have a dependent function $\mathrm{rec}_{\sum_{x : A} P(x)}(e_p) :
+\prod_{p : \sum_{x : A} P(x)} P(p)$ satisfying the following:
+
+*Computation rule* Given $x : A$, and $y : P(x)$ we have:
+\begin{equation*}
+\mathrm{rec}_{\sum_{x : A} P(x)}((x, y)) \equiv e_p(x, y)
+\end{equation*}
+
+As an easy example, let us define the projections that extract out the 
+components of a dependent pair. First things first, let's suppose
+$A : \mathcal{U}$ and $P : A \to \mathcal{U}$ and construct the first 
+projection:
+
+\begin{equation*}
+\mathrm{pr}_1 : \left(\sum_{x : A} P(x)\right) \to A \\
+\mathrm{pr}_1 :\equiv \mathrm{rec}_{\sum_{x : A} P(x)}(...)
+\end{equation*}
+
+We have to fill in the dots with a function with the type
+$\prod_{x : A} P(x) \to A$ but we can just ignore the
+given element of $P(x)$ to give the following definition
+for $\mathrm{pr}_1$:
+
+\begin{equation*}
+\mathrm{pr}_1 :\equiv \mathrm{rec}_{\sum_{x : A} P(x)}(\lambda \, x. \lambda \, y. x)
+\end{equation*}
+
+What about the second projection? It will take any pair 
+$p : \sum_{x : A} P(x)$ and give you its second component,
+which will have the type $P(\mathrm{pr}_1(x))$. So let's
+define it then, starting with the template for the induction rule:
+
+\begin{equation*}
+\mathrm{pr}_2 : \prod_{p : \sum_{x : A} P(x)} P(\mathrm{pr}_1(p)) \\
+\mathrm{pr}_2 : \mathrm{ind}_{\sum_{x : A} P(x)}(e_p)
+\end{equation*}
+
+We have to define $e_p : \prod_{x : A} \prod_{y : P(x)} P(\mathrm{pr}_1((x, y))$,
+however, $\mathrm{pr}_1((x, y)) \equiv x$ by the computation rule for recursion.
+So we just have to define $e_p : \prod_{x : A} \prod_{y : P(x)} P(x)$, but this
+is trivial:
+
+\begin{equation*}
+\mathrm{pr}_2 :\equiv \mathrm{ind}_{\sum_{x : A} P(x)}(\lambda \, x. \lambda \, y. y)
+\end{equation*}
 
 * Dependent types and logic 
 Let's talk about the logical interpretation of dependent types. First, in 
@@ -277,7 +328,7 @@ we can show that $\sum_{x : A} P(x)$ implies $X$ by showing $\prod_{x : A} P(x) 
 Or in more words, by assuming an arbitrary element of $x : A$ exists, such that $P(x)$ and deducing $X$ 
 from that.
 
-As an application of everything we've learned so far, we will prove the "type theoretic 
+As an application of everything we've learned so far, we will /prove/ the "type theoretic 
 axiom of choice." Suppose we are given $A : \mathcal{U}$, $B : A \to \mathcal{U}$, and
 a type family $P : \prod_{x : A} B(x) \to \mathcal{U}$
 
@@ -300,13 +351,62 @@ AC(s) :\equiv (\cdots, \cdots)
 Let us first construct the first component of the 
 output of $AC$, which is a function $f : \prod_{x : A} B(x)$. Let $x : A$,
 we need to construct $B(x)$, however we can get the first component of
-$s(x) : \sum_{b : B(x)} P(x, b)$ so we define $f :\equiv \lambda x \, \cdot 
+$s(x) : \sum_{b : B(x)} P(x, b)$ so we define $f :\equiv \lambda \, x. 
 \mathrm{pr}_1(s(x))$
 
 \begin{equation*}
-AC(s) :\equiv (\lambda \, \cdot \mathrm{pr}_1(s(x)), \cdots)
+AC(s) :\equiv (\lambda \, x . \mathrm{pr}_1(s(x)), \cdots)
 \end{equation*}
 
 Now what about the second component, it needs to be a function
 $\prod_{x : A} P(x, f(x))$ and since $f(x) \equiv \mathrm{pr}_1(s(x))$
-we just need to construct $\prod_{x : A} P(x, \mathrm{pr}_1(s(x)))$. Now,
+we just need to construct $\prod_{x : A} P(x, \mathrm{pr}_1(s(x)))$. Obviously,
+the appropriate thing to use is the first projection since $\lambda x \,. 
+\mathrm{pr}_2(s(x))$ has the type we want.
+
+\begin{equation*}
+AC(s) :\equiv (\lambda \, x . \mathrm{pr}_1(s(x)), \lambda \, x . \mathrm{pr}_2(s(x)))
+\end{equation*}
+
+Done! Now we should reflect on this for a moment, in type theory we can 
+/prove/ this version of the axiom of choice it is not an axiom. Why is it
+the case that a similar seeming statement in set theory needs to be 
+assumed but the equivalent version in type theory can be proven. Essentially,
+there is a subtle difference between the notion of "there exists," that we have
+in type theory based on dependent pairs and the traditional set theoretic notion.
+In type theory, existence means being able to construct an object satisfying 
+particular properties. In set theory, this is not necessarily the case one can
+show that something exists without giving a method for constructing it. So,
+in type theory the statement "for every $x : A$ there exits a corresponding $b : B(x)$
+such that $P(x, b)$" is a method of constructing a $b$ from a given $x$
+such that we always have $P(x, b)$ and we just have to rearrange the data into 
+two separate parts: firstly a method for constructing a $b$ from a given $x$ this is the
+function $f$, and secondly a proof that this method always outputs elements that
+satisfy $P$. There are several ways of recovering the traditional notion of 
+"existence," which does not consist of construction which we may talk about later. 
+This is a special case of the general distinction between classical, a.k.a. traditional
+logic and constructive logic such as the one we have based on type theory. A full
+discussion of this distinction would be interesting, but unfortunately this blog
+post is already too long. So here are exercises, I can't give more interesting 
+ones since we haven't defined equality yet:
+
+*Exercise* Implement concatenation for vectors. First implement it
+using pattern matching notation, and then translate the pattern matching
+notation to the recursion/induction principles for the appropriate types. Notice
+that if you fit your implementation of concatenation to your implementation of
+addition for natural numbers then you will make your life much easier.
+
+*Exercise* Let's say I have a type $A : \mathcal{U}$ and
+a function $f : A \to B$, I can apply this function to each component
+of a vector $\mathrm{Vec}(n, A)$ to get a vector $\mathrm{Vec}(n, B)$. Implement
+a general procedure for applying a given function to each component of
+a vector:
+\begin{equation*}
+map : \prod_{n : \mathbb{N}} \prod_{f : A \to B} \mathrm{Vec}(n, A) \to \mathrm{Vec}(n, B)
+\end{equation*}
+
+*Exercise* Implement a procedure that calculates the product of all the components
+of a vector $\mathrm{Vec}(n, \mathbb{N})$, and a similar procedure that implements
+the sum of all the components. If you see a similarity between these two, define 
+a general procedure that captures that similarity and rewrite your definitions 
+in term of this general procedure. 
